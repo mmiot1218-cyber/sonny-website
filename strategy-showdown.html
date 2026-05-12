@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strategy Showdown</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: #0a0a0f;
+      min-height: 100vh;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 300px; height: 300px; background: rgba(0,200,150,0.08); top: -100px; right: -100px; }
+    .orb-2 { width: 200px; height: 200px; background: rgba(100,100,255,0.06); bottom: -50px; left: -50px; animation-delay: -4s; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-20px, 20px) scale(1.1); }
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 48px 24px 32px;
+    }
+    .header-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      transition: color 0.2s;
+    }
+    .header-back:hover { color: rgba(0,200,150,0.8); }
+    .header-back svg { width: 16px; height: 16px; }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(0,200,150,0.9);
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.05em;
+    }
+
+    /* Rank toggle */
+    .rank-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 10;
+    }
+    .rank-btn {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.4);
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .rank-btn:hover { border-color: rgba(0,200,150,0.3); color: rgba(255,255,255,0.7); }
+    .rank-btn.active {
+      background: rgba(0,200,150,0.1);
+      border-color: rgba(0,200,150,0.4);
+      color: rgba(0,200,150,0.9);
+    }
+
+    /* Leaderboard */
+    .leaderboard {
+      position: relative;
+      z-index: 10;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .rank-card {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      gap: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .rank-card:hover {
+      border-color: rgba(0,200,150,0.2);
+      transform: translateX(4px);
+    }
+    .rank-card.rank-1 {
+      border-color: rgba(255,200,0,0.3);
+      background: rgba(255,200,0,0.04);
+    }
+    .rank-card.rank-2 {
+      border-color: rgba(180,180,200,0.2);
+      background: rgba(180,180,200,0.02);
+    }
+    .rank-card.rank-3 {
+      border-color: rgba(180,120,60,0.2);
+      background: rgba(180,120,60,0.02);
+    }
+
+    /* Rank medal */
+    .rank-medal {
+      font-size: 26px;
+      text-align: center;
+    }
+
+    /* Paper info */
+    .paper-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .paper-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+    }
+    .paper-tag {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .paper-tag.p1 { color: rgba(0,200,150,0.7); }
+    .paper-tag.p11 { color: rgba(100,180,255,0.7); }
+    .paper-tag.p2 { color: rgba(255,180,0,0.7); }
+    .paper-tag.p21 { color: rgba(255,120,200,0.7); }
+
+    /* Score display */
+    .score-display {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    .score-main {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .score-main.positive { color: #00c896; }
+    .score-main.negative { color: #ff6060; }
+    .score-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Sub-metrics row */
+    .sub-metrics {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 20px;
+      margin-top: 8px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .sub-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sub-metric-label {
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .sub-metric-value {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .sub-metric-value.pos { color: rgba(0,200,150,0.8); }
+    .sub-metric-value.neg { color: rgba(255,80,80,0.8); }
+    .sub-metric-value.neu { color: rgba(255,255,255,0.5); }
+
+    /* Crown */
+    .crown-float {
+      position: absolute;
+      top: -8px;
+      right: 80px;
+      font-size: 20px;
+      filter: drop-shadow(0 4px 8px rgba(255,200,0,0.3));
+    }
+
+    /* Metric selection label */
+    .metric-label-bar {
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(0,200,150,0.5);
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 10;
+    }
+
+    @media (max-width: 500px) {
+      .rank-card { grid-template-columns: 36px 1fr auto; gap: 12px; padding: 16px; }
+      .rank-medal { font-size: 20px; }
+      .score-main { font-size: 18px; }
+      .sub-metrics { gap: 12px; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="header">
+    <a href="index2.html" class="header-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15,18 9,12 15,6"/>
+      </svg>
+      Back to Menu
+    </a>
+    <h1>Strategy Showdown</h1>
+    <p>4 candidates · All ranked together</p>
+  </div>
+
+  <!-- Rank by selector -->
+  <div class="rank-toggle">
+    <button class="rank-btn active" data-metric="return">Return</button>
+    <button class="rank-btn" data-metric="sharpe">Sharpe</button>
+    <button class="rank-btn" data-metric="drawdown">Low Drawdown</button>
+    <button class="rank-btn" data-metric="winrate">Win Rate</button>
+  </div>
+
+  <div class="metric-label-bar" id="metricLabel">Ranked by: Total Return</div>
+
+  <!-- Leaderboard -->
+  <div class="leaderboard">
+    <div class="ranking-list" id="rankingList"></div>
+  </div>
+
+  <script>
+    const papers = [
+      { name: 'Paper 1',  tag: 'p1',  tagLabel: 'Paper 1',   return: 186.4, sharpe: 1.42, drawdown: -34.2, winrate: 58, hold: '42 days' },
+      { name: 'Paper 1.1',tag: 'p11', tagLabel: 'Paper 1.1', return: 124.8, sharpe: 1.18, drawdown: -28.7, winrate: 62, hold: '38 days' },
+      { name: 'Paper 2',  tag: 'p2',  tagLabel: 'Paper 2',   return: 89.7,  sharpe: 0.94, drawdown: -22.1, winrate: 71, hold: '∞ forever' },
+      { name: 'Paper 2.1',tag: 'p21', tagLabel: 'Paper 2.1', return: 156.3, sharpe: 1.31, drawdown: -31.5, winrate: 55, hold: '55 days' },
+    ];
+
+    const medalMap = { 0: '🥇', 1: '🥈', 2: '🥉', 3: '  ' };
+    const metricConfig = {
+      return:   { label: 'Total Return',   format: v => `+${v.toFixed(1)}%`, cls: 'positive', sortDesc: true },
+      sharpe:   { label: 'Sharpe Ratio',   format: v => v.toFixed(2),        cls: 'positive', sortDesc: true },
+      drawdown: { label: 'Max Drawdown',   format: v => `${v}%`,             cls: 'negative', sortDesc: false },
+      winrate:  { label: 'Win Rate',        format: v => `${v}%`,             cls: 'positive', sortDesc: true },
+    };
+
+    let currentMetric = 'return';
+
+    function renderRanking(metric) {
+      const cfg = metricConfig[metric];
+      document.getElementById('metricLabel').textContent = `Ranked by: ${cfg.label}`;
+
+      // Sort
+      const sorted = [...papers].sort((a, b) =>
+        cfg.sortDesc ? b[metric] - a[metric] : a[metric] - b[metric]
+      );
+
+      const list = document.getElementById('rankingList');
+      list.innerHTML = '';
+
+      sorted.forEach((paper, i) => {
+        const rank = i;
+        const isFirst = rank === 0;
+        const scoreCls = cfg.cls;
+
+        const card = document.createElement('div');
+        card.className = `rank-card rank-${rank + 1}`;
+        card.innerHTML = `
+          ${isFirst ? '<span class="crown-float">👑</span>' : ''}
+          <div class="rank-medal">${medalMap[rank]}</div>
+          <div class="paper-info">
+            <span class="paper-name">${paper.name}</span>
+            <span class="paper-tag ${paper.tag}">${paper.tagLabel}</span>
+          </div>
+          <div class="score-display">
+            <div class="score-main ${scoreCls}">${cfg.format(paper[metric])}</div>
+            <div class="score-label">${cfg.label}</div>
+          </div>
+          <div class="sub-metrics">
+            <div class="sub-metric">
+              <span class="sub-metric-label">Sharpe</span>
+              <span class="sub-metric-value neu">${paper.sharpe.toFixed(2)}</span>
+            </div>
+            <div class="sub-metric">
+              <span class="sub-metric-label">Drawdown</span>
+              <span class="sub-metric-value neg">${paper.drawdown}%</span>
+            </div>
+            <div class="sub-metric">
+              <span class="sub-metric-label">Win Rate</span>
+              <span class="sub-metric-value neu">${paper.winrate}%</span>
+            </div>
+            <div class="sub-metric">
+              <span class="sub-metric-label">Avg Hold</span>
+              <span class="sub-metric-value neu">${paper.hold}</span>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // Button clicks
+    document.querySelectorAll('.rank-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMetric = btn.dataset.metric;
+        renderRanking(currentMetric);
+      });
+    });
+
+    // Initial render
+    renderRanking('return');
+  </script>
+
+</body>
+</html>

@@ -118,13 +118,13 @@
     }
     .pin-error.show { opacity: 1; }
 
-    /* Numpad */
+    /* ===== ATM Visual Numpad ===== */
     .numpad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       max-width: 240px;
-      margin: 0 auto 20px;
+      margin: 0 auto 10px;
     }
     .numpad-btn {
       width: 68px;
@@ -147,19 +147,26 @@
       position: relative;
       overflow: hidden;
     }
+    /* Subtle inner glow on press */
+    .numpad-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0,200,150,0.2) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
     .numpad-btn:hover {
       background: rgba(255,255,255,0.1);
       border-color: rgba(255,255,255,0.15);
+      transform: translateY(-1px);
     }
     .numpad-btn:active {
       transform: scale(0.94);
-      background: rgba(0,200,150,0.15);
+      background: rgba(0,200,150,0.12);
       border-color: rgba(0,200,150,0.3);
     }
-    .numpad-btn.clear { font-size: 13px; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); }
-    .numpad-btn.clear:hover { color: #ff6060; }
-    .numpad-btn.backspace { font-size: 18px; }
-    .numpad-btn.backspace:hover { color: #ff9060; }
+    .numpad-btn:active::after { opacity: 1; }
 
     /* Bottom row: empty + 0 + backspace */
     .numpad-row-4 {
@@ -169,54 +176,17 @@
       max-width: 240px;
       margin: 0 auto;
     }
-
-    /* Remember me */
-    .remember-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 20px;
+    .numpad-btn.clear { font-size: 13px; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); }
+    .numpad-btn.clear:hover { color: #ff6060; border-color: rgba(255,80,80,0.3); }
+    .numpad-btn.backspace { font-size: 18px; }
+    .numpad-btn.backspace:hover { color: #ff9060; }
+    .numpad-btn.empty {
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+      pointer-events: none;
     }
-    .remember-row label {
-      font-size: 11px;
-      color: rgba(255,255,255,0.3);
-      cursor: pointer;
-      user-select: none;
-      letter-spacing: 0.05em;
-    }
-    .toggle {
-      width: 36px;
-      height: 20px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.2s;
-    }
-    .toggle.on { background: rgba(0,200,150,0.4); }
-    .toggle::after {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      top: 3px;
-      left: 3px;
-      transition: transform 0.2s;
-    }
-    .toggle.on::after { transform: translateX(16px); }
-
-    /* Shake animation */
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-10px); }
-      40% { transform: translateX(10px); }
-      60% { transform: translateX(-6px); }
-      80% { transform: translateX(6px); }
-    }
-    .shake { animation: shake 0.4s ease; }
+    .numpad-btn.zero { font-size: 22px; }
 
     /* Success animation */
     @keyframes success-flash {
@@ -234,98 +204,15 @@
     }
     .success-overlay.show { display: block; animation: success-flash 0.6s ease forwards; }
 
-    /* Content (hidden by default) */
-    #content { display: none; padding: 20px; }
-    #content.unlocked { display: block; }
-    #content h1 { color: #00c896; font-size: 28px; margin-bottom: 16px; }
-    #content p { color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.8; }
-    #content .badge {
-      display: inline-block;
-      padding: 6px 16px;
-      background: rgba(0,200,150,0.15);
-      border: 1px solid rgba(0,200,150,0.3);
-      border-radius: 100px;
-      font-size: 11px;
-      color: #00c896;
-      letter-spacing: 0.1em;
-      margin-bottom: 20px;
+    /* Shake animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
     }
-
-    /* Settings cog */
-    .settings-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.3);
-      font-size: 18px;
-      cursor: pointer;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      z-index: 50;
-    }
-    .settings-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .settings-btn.show { display: flex; }
-
-    /* Change PIN modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      z-index: 200;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-overlay.show { display: flex; }
-    .modal {
-      background: rgba(20,20,28,0.95);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      padding: 32px;
-      min-width: 300px;
-      text-align: left;
-    }
-    .modal h3 { font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 20px; }
-    .modal-field { margin-bottom: 12px; }
-    .modal-field label { font-size: 11px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 6px; }
-    .modal-field input {
-      width: 100%;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      color: #fff;
-      font-family: inherit;
-      font-size: 14px;
-      outline: none;
-    }
-    .modal-field input:focus { border-color: rgba(0,200,150,0.5); }
-    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-    .modal-btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
-      font-family: inherit;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .modal-btn.cancel { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
-    .modal-btn.cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .modal-btn.save { background: rgba(0,200,150,0.2); color: #00c896; border: 1px solid rgba(0,200,150,0.3); }
-    .modal-btn.save:hover { background: rgba(0,200,150,0.3); }
-    .modal-msg { font-size: 11px; margin-top: 10px; text-align: center; min-height: 16px; }
-    .modal-msg.error { color: #ff6060; }
-    .modal-msg.ok { color: #00c896; }
+    .shake { animation: shake 0.4s ease; }
   </style>
 </head>
 <body>
@@ -334,7 +221,6 @@
   <div class="orb orb-2"></div>
   <div class="success-overlay" id="successOverlay"></div>
 
-  <!-- PIN Gate -->
   <div class="pin-gate" id="pinGate">
     <div class="pin-header">
       <div class="pin-icon">🔐</div>
@@ -354,101 +240,94 @@
 
     <div class="pin-error" id="pinError">Incorrect PIN — try again</div>
 
-    <!-- Numpad -->
-    <div class="numpad">
-      <button class="numpad-btn" onclick="digit(1)">1</button>
-      <button class="numpad-btn" onclick="digit(2)">2</button>
-      <button class="numpad-btn" onclick="digit(3)">3</button>
-      <button class="numpad-btn" onclick="digit(4)">4</button>
-      <button class="numpad-btn" onclick="digit(5)">5</button>
-      <button class="numpad-btn" onclick="digit(6)">6</button>
-      <button class="numpad-btn" onclick="digit(7)">7</button>
-      <button class="numpad-btn" onclick="digit(8)">8</button>
-      <button class="numpad-btn" onclick="digit(9)">9</button>
-    </div>
-    <div class="numpad-row-4">
-      <button class="numpad-btn clear" onclick="clearAll()">CLEAR</button>
-      <button class="numpad-btn" onclick="digit(0)">0</button>
-      <button class="numpad-btn backspace" onclick="backspace()">⌫</button>
-    </div>
-
-    <!-- Remember me -->
-    <div class="remember-row">
-      <div class="toggle" id="rememberToggle" onclick="toggleRemember()"></div>
-      <label onclick="toggleRemember()">Remember this device</label>
-    </div>
-  </div>
-
-  <!-- Content (unlocked view) -->
-  <div id="content">
-    <div class="badge">🔓 UNLOCKED</div>
-    <h1>Hello World</h1>
-    <p>Your site content goes here. Edit <code>index.html</code> to build your page.</p>
-    <p style="margin-top:12px; color:rgba(255,255,255,0.3); font-size:12px;">Last unlocked: <span id="lastTime">-</span></p>
-  </div>
-
-  <!-- Settings -->
-  <button class="settings-btn" id="settingsBtn" onclick="showModal()">⚙</button>
-
-  <!-- Change PIN Modal -->
-  <div class="modal-overlay" id="modal">
-    <div class="modal">
-      <h3>Change PIN</h3>
-      <div class="modal-field">
-        <label>Current PIN</label>
-        <input type="password" id="oldPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-      </div>
-      <div class="modal-field">
-        <label>New PIN (4–6 digits)</label>
-        <input type="password" id="newPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-      </div>
-      <div class="modal-field">
-        <label>Confirm New PIN</label>
-        <input type="password" id="confirmPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-      </div>
-      <div class="modal-msg" id="modalMsg"></div>
-      <div class="modal-actions">
-        <button class="modal-btn cancel" onclick="hideModal()">Cancel</button>
-        <button class="modal-btn save" onclick="saveNewPin()">Save</button>
-      </div>
-    </div>
+    <!-- ATM Visual Numpad (layout randomized on load) -->
+    <div class="numpad" id="numpadTop"></div>
+    <div class="numpad-row-4" id="numpadBottom"></div>
   </div>
 
   <script>
     // ========== CONFIG ==========
-    const DEFAULT_PIN = '1234';  // Change this default PIN!
+    const CORRECT_PIN = '091218';
     const MAX_DIGITS = 6;
-    const PIN_COOKIE_KEY = 'pin_token';
-    const PIN_HASH_KEY = 'pin_hash';
-    const REMEMBER_KEY = 'pin_remember';
 
     let entered = '';
 
-    // ========== PIN STORAGE (simple hash) ==========
-    async function sha256(str) {
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-      return btoa(String.fromCharCode(...new Uint8Array(buf)));
+    // ========== ATM VISUAL — RANDOMIZED LAYOUT ==========
+    // Fisher-Yates shuffle
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
     }
 
-    async function getStoredHash() {
-      const stored = localStorage.getItem(PIN_HASH_KEY);
-      return stored || null;
+    function buildNumpad() {
+      // Shuffle digits 1-9 for randomized visual layout
+      const shuffled = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+      const topRow = shuffled.slice(0, 3);
+      const midRow = shuffled.slice(3, 6);
+      const botRow = shuffled.slice(6, 9);
+
+      // Top 3 rows (1-9)
+      const allRows = [topRow, midRow, botRow];
+      const topContainer = document.getElementById('numpadTop');
+      const botContainer = document.getElementById('numpadBottom');
+
+      topContainer.innerHTML = '';
+      botContainer.innerHTML = '';
+
+      allRows.forEach(row => {
+        row.forEach(digit => {
+          const btn = document.createElement('button');
+          btn.className = 'numpad-btn';
+          btn.textContent = digit;
+          btn.addEventListener('click', () => handleInput(digit));
+          topContainer.appendChild(btn);
+        });
+      });
+
+      // Bottom row: empty | 0 | backspace
+      // Add 0 digit to the pool too (so 0 appears once)
+      const zeroBtn = document.createElement('button');
+      zeroBtn.className = 'numpad-btn zero';
+      zeroBtn.textContent = '0';
+      zeroBtn.addEventListener('click', () => handleInput(0));
+
+      const bsBtn = document.createElement('button');
+      bsBtn.className = 'numpad-btn backspace';
+      bsBtn.textContent = '⌫';
+      bsBtn.addEventListener('click', handleBackspace);
+
+      const emptyBtn = document.createElement('button');
+      emptyBtn.className = 'numpad-btn empty';
+
+      botContainer.appendChild(emptyBtn);
+      botContainer.appendChild(zeroBtn);
+      botContainer.appendChild(bsBtn);
     }
 
-    async function savePinHash(pin) {
-      const hash = await sha256(pin);
-      localStorage.setItem(PIN_HASH_KEY, hash);
-      return hash;
+    // ========== INPUT HANDLERS ==========
+    function handleInput(digit) {
+      if (entered.length >= MAX_DIGITS) return;
+      entered += digit;
+      updateDisplay();
     }
 
-    async function getExpectedHash() {
-      const stored = await getStoredHash();
-      if (stored) return stored;
-      // First time: use default PIN
-      return await sha256(DEFAULT_PIN);
+    function handleBackspace() {
+      if (entered.length === 0) return;
+      entered = entered.slice(0, -1);
+      updateDisplay();
     }
 
-    // ========== UI ==========
+    function handleClear() {
+      entered = '';
+      updateDisplay();
+      clearError();
+    }
+
     function updateDisplay() {
       for (let i = 0; i < MAX_DIGITS; i++) {
         const dot = document.getElementById('dot' + i);
@@ -459,9 +338,7 @@
     function clearError() {
       const errEl = document.getElementById('pinError');
       errEl.classList.remove('show');
-      document.querySelectorAll('.pin-dot').forEach(d => {
-        d.classList.remove('error');
-      });
+      document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('error'));
     }
 
     function showError(msg) {
@@ -469,9 +346,7 @@
       errEl.textContent = msg;
       errEl.classList.add('show');
       document.getElementById('pinGate').classList.add('shake');
-      document.querySelectorAll('.pin-dot').forEach(dot => {
-        dot.classList.add('error');
-      });
+      document.querySelectorAll('.pin-dot').forEach(dot => dot.classList.add('error'));
       setTimeout(() => {
         document.getElementById('pinGate').classList.remove('shake');
       }, 400);
@@ -479,157 +354,52 @@
       updateDisplay();
     }
 
-    function digit(n) {
-      if (entered.length >= MAX_DIGITS) return;
-      clearError();
-      entered += n;
-      updateDisplay();
-      if (entered.length >= 4) {
-        // Auto-submit when 4+ digits entered
-      }
-    }
-
-    function backspace() {
-      if (entered.length === 0) return;
-      clearError();
-      entered = entered.slice(0, -1);
-      updateDisplay();
-    }
-
-    function clearAll() {
-      entered = '';
-      clearError();
-      updateDisplay();
-    }
-
     // ========== VERIFY ==========
-    async function verify() {
-      const expected = await getExpectedHash();
-      const input = await sha256(entered);
+    function verify() {
+      if (entered.length !== MAX_DIGITS) return;
 
-      if (input === expected) {
-        // Success!
+      if (entered === CORRECT_PIN) {
+        // Success
         document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('success'));
         document.getElementById('successOverlay').classList.add('show');
-
-        // Save remember token if toggled on
-        if (document.getElementById('rememberToggle').classList.contains('on')) {
-          const token = btoa(entered + ':' + Date.now());
-          localStorage.setItem(PIN_COOKIE_KEY, token);
-          localStorage.setItem(REMEMBER_KEY, '1');
-        }
-
         setTimeout(() => {
-          unlockSite();
-        }, 500);
+          window.location.href = 'index2.html';
+        }, 600);
       } else {
         showError('Incorrect PIN — try again');
       }
     }
 
-    function unlockSite() {
-      document.getElementById('pinGate').style.display = 'none';
-      document.getElementById('content').classList.add('unlocked');
-      document.getElementById('settingsBtn').classList.add('show');
-      document.getElementById('lastTime').textContent = new Date().toLocaleString();
-      entered = '';
-    }
-
-    // ========== AUTO-UNLOCK (remember device) ==========
-    async function checkAutoUnlock() {
-      const token = localStorage.getItem(PIN_COOKIE_KEY);
-      const rememberOn = localStorage.getItem(REMEMBER_KEY);
-      if (token && rememberOn === '1') {
-        // Validate stored hash still matches
-        const storedHash = await getStoredHash();
-        const expectedHash = await getExpectedHash();
-        if (storedHash === expectedHash) {
-          unlockSite();
-          return;
-        }
-        // Hash changed — clear token
-        localStorage.removeItem(PIN_COOKIE_KEY);
+    // ========== AUTO-SUBMIT on 6 digits ==========
+    // Watch entered length and auto-verify when 6 reached
+    const origHandleInput = handleInput;
+    handleInput = function(digit) {
+      if (entered.length >= MAX_DIGITS) return;
+      clearError();
+      entered += digit;
+      updateDisplay();
+      if (entered.length === MAX_DIGITS) {
+        // Small delay so last dot fills visually first
+        setTimeout(verify, 120);
       }
-      // Restore remember toggle state
-      if (rememberOn === '1') {
-        document.getElementById('rememberToggle').classList.add('on');
-      }
-    }
-
-    // ========== REMEMBER TOGGLE ==========
-    function toggleRemember() {
-      document.getElementById('rememberToggle').classList.toggle('on');
-    }
-
-    // ========== CHANGE PIN ==========
-    function showModal() {
-      document.getElementById('modal').classList.add('show');
-      document.getElementById('oldPin').value = '';
-      document.getElementById('newPin').value = '';
-      document.getElementById('confirmPin').value = '';
-      document.getElementById('modalMsg').textContent = '';
-      document.getElementById('oldPin').focus();
-    }
-
-    function hideModal() {
-      document.getElementById('modal').classList.remove('show');
-    }
-
-    async function saveNewPin() {
-      const old = document.getElementById('oldPin').value;
-      const newP = document.getElementById('newPin').value;
-      const confirm = document.getElementById('confirmPin').value;
-      const msg = document.getElementById('modalMsg');
-
-      if (!old || !newP || !confirm) {
-        msg.textContent = 'Fill in all fields';
-        msg.className = 'modal-msg error';
-        return;
-      }
-      if (!/^\d{4,6}$/.test(newP)) {
-        msg.textContent = 'PIN must be 4–6 digits';
-        msg.className = 'modal-msg error';
-        return;
-      }
-      if (newP !== confirm) {
-        msg.textContent = 'PINs do not match';
-        msg.className = 'modal-msg error';
-        return;
-      }
-
-      // Verify old PIN
-      const expectedHash = await getExpectedHash();
-      const oldHash = await sha256(old);
-      if (oldHash !== expectedHash) {
-        msg.textContent = 'Current PIN is wrong';
-        msg.className = 'modal-msg error';
-        return;
-      }
-
-      // Save new PIN
-      await savePinHash(newP);
-      // Invalidate old device tokens
-      localStorage.removeItem(PIN_COOKIE_KEY);
-
-      msg.textContent = '✅ PIN updated!';
-      msg.className = 'modal-msg ok';
-      setTimeout(hideModal, 1200);
-    }
+    };
 
     // ========== KEYBOARD SUPPORT ==========
     document.addEventListener('keydown', (e) => {
-      if (document.getElementById('modal').classList.contains('show')) return;
-      if (document.getElementById('content').classList.contains('unlocked')) return;
-
-      if (e.key >= '0' && e.key <= '9') digit(e.key);
-      else if (e.key === 'Backspace') backspace();
-      else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') clearAll();
-      else if (e.key === 'Enter') verify();
+      if (document.getElementById('content') && document.getElementById('content').classList.contains('unlocked')) return;
+      if (e.key >= '0' && e.key <= '9') {
+        handleInput(parseInt(e.key));
+      } else if (e.key === 'Backspace') {
+        handleBackspace();
+      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+        handleClear();
+      } else if (e.key === 'Enter' && entered.length === MAX_DIGITS) {
+        verify();
+      }
     });
 
     // ========== INIT ==========
-    checkAutoUnlock();
+    buildNumpad();
   </script>
-
 </body>
 </html>

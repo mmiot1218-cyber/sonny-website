@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: #0a0a0f;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 520px;
+      width: 100%;
+      padding: 24px;
+    }
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: #12121a;
+      border: 1px solid rgba(0, 200, 150, 0.15);
+      border-radius: 16px;
+      padding: 36px 24px;
+      cursor: pointer;
+      text-decoration: none;
+      color: #fff;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+    .nav-btn:hover {
+      border-color: rgba(0, 200, 150, 0.6);
+      background: #1a1a28;
+      transform: translateY(-2px);
+    }
+    .nav-btn:active {
+      transform: translateY(0);
+    }
+    .nav-btn svg {
+      width: 44px;
+      height: 44px;
+      stroke: rgba(0, 200, 150, 0.8);
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .nav-btn span {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+    }
+    @media (max-width: 480px) {
+      .container { grid-template-columns: 1fr 1fr; gap: 14px; padding: 16px; }
+      .nav-btn { padding: 24px 12px; gap: 10px; }
+      .nav-btn svg { width: 32px; height: 32px; }
+      .nav-btn span { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- US Stocks -->
+    <a href="us-stocks.html" class="nav-btn">
+      <svg viewBox="0 0 24 24">
+        <polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/>
+        <polyline points="16,7 22,7 22,13"/>
+      </svg>
+      <span>US Stocks</span>
+    </a>
+
+    <!-- HK Stocks -->
+    <a href="hk-stocks.html" class="nav-btn">
+      <svg viewBox="0 0 24 24">
+        <polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/>
+        <polyline points="16,7 22,7 22,13"/>
+        <circle cx="18" cy="17" r="3" fill="rgba(0,200,150,0.3)" stroke="rgba(0,200,150,0.8)"/>
+      </svg>
+      <span>HK Stocks</span>
+    </a>
+
+    <!-- HK Watchlist -->
+    <a href="hk-watchlist.html" class="nav-btn">
+      <svg viewBox="0 0 24 24">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      <span>HK Watchlist</span>
+    </a>
+
+    <!-- Strategy Showdown -->
+    <a href="strategy-showdown.html" class="nav-btn">
+      <svg viewBox="0 0 24 24">
+        <rect x="2" y="3" width="6" height="18" rx="1"/>
+        <rect x="9" y="8" width="6" height="13" rx="1"/>
+        <rect x="16" y="13" width="6" height="8" rx="1"/>
+      </svg>
+      <span>Strategy Showdown</span>
+    </a>
+  </div>
+</body>
+</html>

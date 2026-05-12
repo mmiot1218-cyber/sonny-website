@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HK Watchlist</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: #0a0a0f;
+      min-height: 100vh;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 300px; height: 300px; background: rgba(0,200,150,0.08); top: -100px; right: -100px; }
+    .orb-2 { width: 200px; height: 200px; background: rgba(100,100,255,0.06); bottom: -50px; left: -50px; animation-delay: -4s; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-20px, 20px) scale(1.1); }
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 48px 24px 32px;
+    }
+    .header-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      transition: color 0.2s;
+    }
+    .header-back:hover { color: rgba(0,200,150,0.8); }
+    .header-back svg { width: 16px; height: 16px; }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(0,200,150,0.9);
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.05em;
+    }
+
+    /* Summary bar */
+    .summary-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 40px;
+      padding: 0 24px;
+    }
+    .summary-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50px;
+      padding: 8px 20px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .summary-pill .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .summary-pill .dot.up { background: #00c896; }
+    .summary-pill .dot.down { background: #ff5050; }
+    .pill-label { color: rgba(255,255,255,0.4); text-transform: uppercase; }
+    .pill-value { color: #fff; font-weight: 600; }
+    .pill-value.pos { color: #00c896; }
+    .pill-value.neg { color: #ff5050; }
+
+    /* Section */
+    .section-wrap {
+      position: relative;
+      z-index: 10;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 24px 48px;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-label .icon {
+      font-size: 18px;
+    }
+    .section-label .text {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .section-label.gainers .text { color: rgba(0,200,150,0.6); }
+    .section-label.losers .text { color: rgba(255,80,80,0.6); }
+
+    .stock-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stock-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto auto;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 14px 18px;
+      transition: border-color 0.2s, transform 0.15s;
+      cursor: default;
+    }
+    .stock-row:hover {
+      border-color: rgba(255,255,255,0.12);
+      transform: translateX(3px);
+    }
+    .stock-row.gainer {
+      border-left: 2px solid rgba(0,200,150,0.3);
+    }
+    .stock-row.loser {
+      border-left: 2px solid rgba(255,80,80,0.3);
+    }
+
+    .stock-ticker {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.05em;
+    }
+    .stock-ticker .code {
+      display: block;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      font-weight: 400;
+    }
+
+    .stock-name {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stock-price {
+      text-align: right;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .stock-change {
+      text-align: right;
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 68px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .stock-change.up {
+      color: #00c896;
+      background: rgba(0,200,150,0.1);
+    }
+    .stock-change.down {
+      color: #ff5050;
+      background: rgba(255,80,80,0.1);
+    }
+
+    .rank-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+    .rank-badge.rank-1 { background: rgba(255,200,0,0.2); color: #ffc800; }
+    .rank-badge.rank-2 { background: rgba(180,180,200,0.15); color: #c0c0cc; }
+    .rank-badge.rank-3 { background: rgba(180,120,60,0.15); color: #b4783c; }
+    .rank-badge.rank-4 { background: rgba(100,100,255,0.1); color: #8888ff; }
+    .rank-badge.rank-5 { background: rgba(0,200,150,0.1); color: rgba(0,200,150,0.6); }
+
+    /* Divider */
+    .section-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+      margin: 8px 0 40px;
+    }
+
+    @media (max-width: 500px) {
+      .stock-row { grid-template-columns: 50px 1fr auto; }
+      .stock-price { display: none; }
+      .stock-change { font-size: 12px; }
+      .summary-bar { gap: 12px; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="header">
+    <a href="index2.html" class="header-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15,18 9,12 15,6"/>
+      </svg>
+      Back to Menu
+    </a>
+    <h1>HK Watchlist</h1>
+    <p>20 stocks · Top 5 Gainers & Top 5 Losers</p>
+  </div>
+
+  <!-- Summary pills -->
+  <div class="summary-bar">
+    <div class="summary-pill">
+      <span class="dot up"></span>
+      <span class="pill-label">Gainers</span>
+      <span class="pill-value pos" id="gainerCount">5</span>
+    </div>
+    <div class="summary-pill">
+      <span class="dot down"></span>
+      <span class="pill-label">Losers</span>
+      <span class="pill-value neg" id="loserCount">5</span>
+    </div>
+    <div class="summary-pill">
+      <span class="pill-label">Best</span>
+      <span class="pill-value pos" id="bestStock">—</span>
+      <span class="pill-label" id="bestChange"></span>
+    </div>
+    <div class="summary-pill">
+      <span class="pill-label">Worst</span>
+      <span class="pill-value neg" id="worstStock">—</span>
+      <span class="pill-label" id="worstChange"></span>
+    </div>
+  </div>
+
+  <!-- Top 5 Gainers -->
+  <div class="section-wrap">
+    <div class="section-label gainers">
+      <span class="icon">🚀</span>
+      <span class="text">Top 5 Gainers</span>
+    </div>
+    <div class="stock-list" id="gainerList"></div>
+  </div>
+
+  <div class="section-wrap">
+    <div class="section-divider"></div>
+  </div>
+
+  <!-- Top 5 Losers -->
+  <div class="section-wrap">
+    <div class="section-label losers">
+      <span class="icon">💥</span>
+      <span class="text">Top 5 Losers</span>
+    </div>
+    <div class="stock-list" id="loserList"></div>
+  </div>
+
+  <script>
+    // 20 HK stocks with dummy data
+    const stocks = [
+      { ticker: '9988', name: '阿里巴巴', price: 118.50, change: 7.82 },
+      { ticker: '0700', name: '騰訊控股', price: 445.20, change: 4.15 },
+      { ticker: '1398', name: '工商銀行', price: 4.92, change: 3.80 },
+      { ticker: '0939', name: '建設銀行', price: 6.18, change: 3.52 },
+      { ticker: '3968', name: '招商銀行', price: 38.70, change: 3.18 },
+      { ticker: '2628', name: '中國人壽', price: 15.40, change: 2.85 },
+      { ticker: '2318', name: '中國平安', price: 52.30, change: 2.41 },
+      { ticker: '0388', name: '港交所', price: 342.00, change: 1.92 },
+      { ticker: '0005', name: '滙豐控股', price: 68.80, change: 1.62 },
+      { ticker: '6823', name: '香港電訊', price: 10.20, change: 1.08 },
+      { ticker: '1109', name: '華潤置地', price: 28.60, change: -0.52 },
+      { ticker: '6808', name: '高鑫零售', price: 2.15, change: -1.38 },
+      { ticker: '9926', name: '海底撈', price: 18.90, change: -2.18 },
+      { ticker: '0669', name: '中國生物製藥', price: 3.82, change: -2.80 },
+      { ticker: '2020', name: '安踏體育', price: 68.50, change: -3.25 },
+      { ticker: '6690', name: '海爾智家', price: 26.10, change: -3.88 },
+      { ticker: '2269', name: '金斯瑞生物', price: 14.20, change: -4.42 },
+      { ticker: '9811', name: '小鵬汽車', price: 48.30, change: -5.15 },
+      { ticker: '9868', name: '理想汽車', price: 76.90, change: -6.78 },
+      { ticker: '1008', name: '霸王集團', price: 0.42, change: -8.92 },
+    ];
+
+    function fmt(price) {
+      return price >= 100 ? price.toFixed(2)
+           : price >= 10  ? price.toFixed(2)
+           : price >= 1  ? price.toFixed(2)
+           :                price.toFixed(3);
+    }
+
+    function renderRow(stock, rank) {
+      const isUp = stock.change >= 0;
+      const cls = isUp ? 'up' : 'down';
+      const sign = isUp ? '+' : '';
+      const badgeCls = `rank-${rank}`;
+
+      return `
+        <div class="stock-row ${isUp ? 'gainer' : 'loser'}">
+          <div class="stock-ticker">
+            <span class="rank-badge ${badgeCls}">${rank}</span>
+            <span class="code">${stock.ticker}.HK</span>
+          </div>
+          <div class="stock-name">${stock.name}</div>
+          <div class="stock-price">HK$${fmt(stock.price)}</div>
+          <div class="stock-change ${cls}">${sign}${stock.change.toFixed(2)}%</div>
+        </div>
+      `;
+    }
+
+    // Sort gainers (highest change first)
+    const gainers = [...stocks]
+      .filter(s => s.change > 0)
+      .sort((a, b) => b.change - a.change)
+      .slice(0, 5);
+
+    // Sort losers (lowest/most negative first)
+    const losers = [...stocks]
+      .filter(s => s.change < 0)
+      .sort((a, b) => a.change - b.change)
+      .slice(0, 5);
+
+    document.getElementById('gainerList').innerHTML =
+      gainers.map((s, i) => renderRow(s, i + 1)).join('');
+    document.getElementById('loserList').innerHTML =
+      losers.map((s, i) => renderRow(s, i + 1)).join('');
+
+    // Summary pills
+    document.getElementById('gainerCount').textContent = gainers.length;
+    document.getElementById('loserCount').textContent = losers.length;
+    document.getElementById('bestStock').textContent = gainers[0].ticker + '.HK';
+    document.getElementById('bestChange').textContent = '+' + gainers[0].change.toFixed(2) + '%';
+    document.getElementById('worstStock').textContent = losers[0].ticker + '.HK';
+    document.getElementById('worstChange').textContent = losers[0].change.toFixed(2) + '%';
+  </script>
+
+</body>
+</html>
