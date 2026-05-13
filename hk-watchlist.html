@@ -143,22 +143,27 @@
     .stock-row.flat { border-left: 2px solid rgba(255,255,255,0.08); }
 
     /* Cells */
-    .cell { display: flex; align-items: center; }
+    .cell { display: flex; align-items: center; overflow: hidden; }
 
     .ticker-cell {
       flex-direction: column;
       align-items: flex-start;
       gap: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 100%;
     }
     .ticker-cell .code {
       font-size: 12px;
       font-weight: 600;
       color: rgba(255,255,255,0.8);
       letter-spacing: 0.02em;
+      white-space: nowrap;
     }
     .ticker-cell .expiry {
       font-size: 10px;
       color: rgba(255,255,255,0.25);
+      white-space: nowrap;
     }
 
     .stock-name {
