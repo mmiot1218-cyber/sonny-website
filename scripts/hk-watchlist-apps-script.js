@@ -26,11 +26,17 @@ const COL_BF     = 7;  // H  D-0 BF
 const COL_WR     = 8;  // I  D-0 WR
 const COL_TF     = 9;  // J  D-0 TF
 
+const CALLBACK_NAME = 'handleHkWatchlist';
+
 function doGet(request) {
-  const output = fetchHkWatchlist();
+  const output   = fetchHkWatchlist();
+  const jsonp    = request.parameter.callback || 'handleHkWatchlist';
+  const payload  = JSON.stringify(output);
+
+  // JSONP: wrap in callback to bypass CORS (load as <script> tag)
   return ContentService
-    .createTextOutput(JSON.stringify(output), 'application/json')
-    .setMimeType(ContentService.MimeType.JSON);
+    .createTextOutput(`${jsonp}(${payload})`)
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
 function fetchHkWatchlist() {

@@ -331,6 +331,8 @@
     // ─────────────────────────────────────────────────────────────────
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhjeChlOT-7DKyGFAOJxXk0CbEVrnytni7C5UF1YRcW5DJSCeQwlJzsnPWVboFXV8hbA/exec';
 
+    const CALLBACK_NAME = 'handleHkWatchlist';
+
     function parseChange(changeStr) {
       const num = parseFloat(changeStr.replace('%', '').replace('+', ''));
       return isNaN(num) ? 0 : num;
@@ -386,30 +388,65 @@
         'Updated ' + now.toLocaleTimeString('en-HK', { timeZone: 'Asia/Hong_Kong' });
     }
 
-    // ── Try Apps Script, fall back to embedded data ──────────────────
+    // ── Load data via JSONP (bypasses CORS) ─────────────────────────
     async function loadData() {
       if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-        // No URL configured — use embedded data
         render(FALLBACK_DATA);
         updateTimestamp();
         return;
       }
 
-      try {
-        const resp = await fetch(APPS_SCRIPT_URL);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
-        if (Array.isArray(data) && data.length > 0) {
-          render(data);
-        } else {
-          throw new Error('Empty or invalid response');
+      return new Promise((resolve) => {
+        const callbackName = CALLBACK_NAME;
+        const timeout      = 10000; // 10s timeout
+        let   timer;
+        let   loaded = false;
+
+        // Define the global callback Apps Script will call
+        window[callbackName] = function (data) {
+          loaded = true;
+          clearTimeout(timer);
+          cleanup();
+          if (Array.isArray(data) && data.length > 0) {
+            render(data);
+          } else {
+            render(FALLBACK_DATA);
+          }
+          updateTimestamp();
+          resolve();
+        };
+
+        function cleanup() {
+          delete window[callbackName];
+          const el = document.getElementById('jsonp_script');
+          if (el) el.remove();
         }
-      } catch (e) {
-        console.warn('[HK Watchlist] Apps Script unavailable, using fallback data.', e.message);
-        render(FALLBACK_DATA);
-      } finally {
-        updateTimestamp();
-      }
+
+        timer = setTimeout(() => {
+          if (!loaded) {
+            cleanup();
+            console.warn('[HK Watchlist] Apps Script timeout, using fallback data.');
+            render(FALLBACK_DATA);
+            updateTimestamp();
+            resolve();
+          }
+        }, timeout);
+
+        // Inject <script> tag — Apps Script returns JSONP: callbackName(data)
+        const script       = document.createElement('script');
+        script.id         = 'jsonp_script';
+        script.src        = APPS_SCRIPT_URL + '?callback=' + encodeURIComponent(callbackName);
+        script.onerror    = () => {
+          if (!loaded) {
+            cleanup();
+            console.warn('[HK Watchlist] Apps Script unavailable, using fallback data.');
+            render(FALLBACK_DATA);
+            updateTimestamp();
+            resolve();
+          }
+        };
+        document.body.appendChild(script);
+      });
     }
 
     loadData();
